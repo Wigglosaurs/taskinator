@@ -5,6 +5,7 @@ var taskIdCounter = 0;
 var formEl = document.querySelector("#task-form");
 var tasksToDoEl = document.querySelector("#tasks-to-do");
 
+// create array to hold tasks for saving
 var tasks = [];
 
 var taskFormHandler = function (event) {
@@ -20,6 +21,7 @@ var taskFormHandler = function (event) {
 
     formEl.reset();
 
+    // check if task is new or one being edited by seeing if it has a data-task-id attribute
     var isEdit = formEl.hasAttribute("data-task-id");
 
     // has data attribute, so get task id and call function to complete edit process
@@ -70,6 +72,7 @@ var createTaskEl = function (taskDataObj) {
     // increase task counter for next unique id
     taskIdCounter++;
 
+    // save tasks to localStorage
     saveTasks();
 };
 
@@ -83,7 +86,6 @@ var createTaskActions = function (taskId) {
     editButtonEl.textContent = "Edit";
     editButtonEl.className = "btn edit-btn";
     editButtonEl.setAttribute("data-task-id", taskId);
-
     actionContainerEl.appendChild(editButtonEl);
 
     // create delete button
@@ -91,13 +93,14 @@ var createTaskActions = function (taskId) {
     deleteButtonEl.textContent = "Delete";
     deleteButtonEl.className = "btn delete-btn";
     deleteButtonEl.setAttribute("data-task-id", taskId);
-
     actionContainerEl.appendChild(deleteButtonEl);
 
+    // create change status dropdown
     var statusSelectEl = document.createElement("select");
     statusSelectEl.className = "select-status";
     statusSelectEl.setAttribute("name", "status-change");
     statusSelectEl.setAttribute("data-task-id", taskId);
+    // create status options
     var statusChoices = ["To Do", "In Progress", "Completed"];
 
     for (var i = 0; i < statusChoices.length; i++) {
@@ -229,6 +232,32 @@ var saveTasks = function () {
     localStorage.setItem("tasks", JSON.stringify(tasks));
 };
 
-pageContentEl.addEventListener("change", taskStatusChangeHandler);
-pageContentEl.addEventListener("click", taskButtonHandler);
+var loadTasks = function () {
+    var savedTasks = localStorage.getItem("tasks");
+    // if there are no tasks, set tasks to an empty array and return out of the function
+    if (!savedTasks) {
+        return false;
+    }
+    console.log("Saved tasks found!");
+    // else, load up saved tasks
+
+    // parse into array of objects
+    savedTasks = JSON.parse(savedTasks);
+
+    // loop through savedTasks array
+    for (var i = 0; i < savedTasks.length; i++) {
+        // pass each task object into the 'createTaskEl()' function 
+        createTaskEl(savedTasks[i]);
+    }
+};
+
+// for changing the status
 formEl.addEventListener("submit", taskFormHandler);
+
+// for edit and delete buttons
+pageContentEl.addEventListener("click", taskButtonHandler);
+
+// Create a new task
+pageContentEl.addEventListener("change", taskStatusChangeHandler);
+
+loadTasks();
